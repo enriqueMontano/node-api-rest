@@ -9,7 +9,7 @@ class HttpError extends Error {
   }
 }
 
-export const isHttpError = (error: unknown): error is HttpError => {
+const isHttpError = (error: unknown): error is HttpError => {
   return error instanceof Error && "statusCode" in error;
 };
 
@@ -33,4 +33,4 @@ const errorHandler = (
   });
 };
 
-export { HttpError, errorHandler };
+export { HttpError, isHttpError, errorHandler };
