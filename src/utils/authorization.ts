@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import mongoose, { ObjectId } from "mongoose";
 import { HttpError } from "../middlewares";
 
@@ -10,7 +9,7 @@ export const isProductOwner = async (
     !mongoose.Types.ObjectId.isValid(requestUserId) ||
     !mongoose.Types.ObjectId.isValid(productUserId as string)
   ) {
-    throw new HttpError("Invalid ID format", 400);
+    throw new HttpError("Invalid mongo id", 400);
   }
 
   const objectId1 = new mongoose.Types.ObjectId(requestUserId);
