@@ -14,7 +14,13 @@ const app: Application = express();
 
 app.use(forceHttps);
 app.use(morganMiddleware);
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(helmet());
 app.use(express.json());
 
