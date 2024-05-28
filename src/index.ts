@@ -12,11 +12,11 @@ import { appConfig, connectDB } from "./configs";
 connectDB();
 const app: Application = express();
 
+app.use(forceHttps);
 app.use(morganMiddleware);
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
-app.use(forceHttps);
 
 app.use("/api", router);
 app.use(errorHandler);
@@ -27,8 +27,10 @@ const options = {
   cert: fs.readFileSync(path.resolve(__dirname, "../certificate.crt")),
 };
 
-https.createServer(options, app).listen(appConfig.port, () => {
-  logger.info(`Server listening at port: ${appConfig.port}`);
+const server = https.createServer(options, app);
+
+server.listen(appConfig.port, () => {
+  logger.info(`HTTPS Server listening at port: ${appConfig.port}`);
 });
 
-export default app;
+export default server;
