@@ -52,8 +52,10 @@ openssl genrsa -out private.key 2048
 
 - Generate the CSR file (Certificate Signing Request)
 
+_There are quite a few fields, but you can leave them blank by pressing enter._
+
 ```bash
-openssl req -new -key private.key -out certificate.crt
+openssl req -new -key private.key -out request.crt
 ```
 
 - Sign the certificate with your own authority
@@ -89,7 +91,7 @@ Check if everything has gone well and the server is listening
 Server is using a self-signed certificate, to force curl to ignore the certificate verification, using the -k or –insecure flag, as the following example:
 
 ```bash
-curl -k GET https://localhost:443/api/status
+curl -k GET https://localhost:8443/api/status
 ```
 
 Sample response:
@@ -106,7 +108,7 @@ Credentials
 ```
 
 ```bash
-curl -k --location 'https://localhost:443/api/auth/sign-in' \                                                                               
+curl -k --location 'https://localhost:8443/api/auth/sign-in' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "email": "admin@gmail.com",
