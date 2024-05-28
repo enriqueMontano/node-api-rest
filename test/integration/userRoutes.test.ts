@@ -154,4 +154,15 @@ describe("User routes", () => {
     expect(response.status).toBe(403);
     expect(response.body.message).toBe("Unauthorized role");
   });
+
+  it("should return 422 when an admin user tries to delete a user by an invalid mongo id", async () => {
+    const invalidMongoId = "invalid_mongo_id";
+    const response = await request(server)
+      .delete(`/api/users/${invalidMongoId}`)
+      .agent(agent)
+      .set("Authorization", `Bearer ${adminUserToken}`);
+
+    expect(response.status).toBe(422);
+    expect(response.body.message).toBe("id: Invalid value");
+  });
 });
