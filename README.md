@@ -34,7 +34,7 @@ MONGO_DB_NAME="test"
 JWT_SECRET="default_secret"
 JWT_EXPIRATION="5m"
 NODE_ENV="development"
-PORT=443
+PORT=8443
 ```
 
 3. Configure an SSL certificate and a private key files to configure https server:
@@ -54,6 +54,14 @@ openssl genrsa -out private.key 2048
 
 ```bash
 openssl req -new -key private.key -out certificate.crt
+```
+
+- Sign the certificate with your own authority
+
+_Sign your own certificate for development or testing purposes, you can. Run the following command:_
+
+```bash
+openssl x509 -req -in request.crt -signkey private.key -out certificate.crt
 ```
 
 4. Seed the Mongo database with an admin user:
