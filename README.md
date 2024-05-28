@@ -7,22 +7,23 @@ Simple API REST with JWT authentication, role authorization and database access 
 1. Clone the project on your computer:
 
 ```bash
-$ git clone https://github.com/enriqueMontano/node-api-rest.git
+git clone https://github.com/enriqueMontano/node-api-rest.git
 ```
 
 2. Install dependencies:
 
+On project root directory launch the following commands:
 ```bash
-$ cd node-api-rest
-$ npm i
+npm i
 ```
+
 
 3. Set environment variables:
 
 - Create a .env file in the project root directory
 
 ```bash
-$ touch .env
+touch .env
 ```
 
 - Set environment variables:
@@ -46,13 +47,13 @@ On project root directory launch the following commands:
 - Generate the private.key file
 
 ```bash
-$ openssl genrsa -out private.key 2048
+openssl genrsa -out private.key 2048
 ```
 
 - Generate the CSR file (Certificate Signing Request)
 
 ```bash
-$ openssl req -new -key private.key -out certificate.crt
+openssl req -new -key private.key -out certificate.crt
 ```
 
 4. Seed the Mongo database with an admin user:
@@ -60,7 +61,7 @@ $ openssl req -new -key private.key -out certificate.crt
 On project root directory launch the following command:
 
 ```bash
-$ node src/scripts/mongoSeed.js
+node src/scripts/mongoSeed.js
 ```
 
 ## How to run
@@ -68,7 +69,7 @@ $ node src/scripts/mongoSeed.js
 To launch the server in development mode, on the project root directory
 
 ```bash
-$ npm run dev
+npm run dev
 ```
 
 ## How to use
@@ -80,7 +81,7 @@ Check if everything has gone well and the server is listening
 Server is using a self-signed certificate, to force curl to ignore the certificate verification, using the -k or –insecure flag, as the following example:
 
 ```bash
-$ curl -k GET https://localhost:443/api/status
+curl -k GET https://localhost:443/api/status
 ```
 
 Sample response:
@@ -97,7 +98,7 @@ Credentials
 ```
 
 ```bash
-$ curl -k --location 'https://localhost:443/api/auth/sign-in' \                                                                               
+curl -k --location 'https://localhost:443/api/auth/sign-in' \                                                                               
 --header 'Content-Type: application/json' \
 --data-raw '{
     "email": "admin@gmail.com",
@@ -178,7 +179,7 @@ Sample response:
 To run the tests, in the root directory launch the following command:
 
 ```bash
-$ npm test
+npm test
 ```
 
 ## Project structure
