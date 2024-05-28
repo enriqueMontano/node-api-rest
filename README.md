@@ -121,9 +121,14 @@ Sample response:
 {"message":"Successful login","accesToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjU0OGM5MjMxMGMwOWM2YmYzZGM5OGUiLCJpYXQiOjE3MTY5MDE2MTAsImV4cCI6MTcxNjkwNTIxMH0.VmYZ5pxQBwCHvhlwTxoco1yl0iF-bzvCYfu8d5DplZA"}
 ```
 
-For the aboves examples and to test the rest of the endpoints, it is advisable to use Postman or a similar tool.
-
 ### Endpoints
+
+>For the above examples and to properly test the rest of the endpoints, it is recommended to use Postman or a similar tool.
+>
+>You will also need to disable SSL certificate verification, to disable it in Postman you can follow this [guide](https://learning.>postman.com/docs/sending-requests/authorization/certificates/#troubleshooting-certificate-errors).
+>
+>It is important to note that disabling SSL certificate verification in a production environment is a bad security practice and can expose the system to significant risks, such as Man-in-the-Middle attacks. Therefore, this practice should be strictly limited to controlled development and test environments. 
+
 
 _All routes require JWT authentication._
 
