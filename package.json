@@ -1,5 +1,5 @@
 {
-  "name": "node-api-ts",
+  "name": "node-api-rest",
   "version": "1.0.0",
   "main": "src/index.js",
   "author": "Enrique Montaño",
