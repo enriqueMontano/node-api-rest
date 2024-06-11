@@ -15,8 +15,8 @@ export class UserService {
     return this.repository.getByEmail(email);
   }
 
-  async save(user: IUserCreate): Promise<void> {
-    await this.repository.save(user);
+  async save(user: IUserCreate): Promise<IUser> {
+    return await this.repository.save(user);
   }
 
   async deleteUser(id: string): Promise<void> {
