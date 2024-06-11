@@ -7,9 +7,9 @@ import helmet from "helmet";
 import router from "./routes";
 import { errorHandler, morganMiddleware, forceHttps } from "./middlewares";
 import { logger } from "./utils";
-import { appConfig, connectDB } from "./configs";
+import { appConfig, mongo } from "./configs";
 
-connectDB();
+mongo.connectDb();
 const app: Application = express();
 
 app.use(forceHttps);

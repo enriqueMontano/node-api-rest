@@ -1,20 +1,18 @@
 import { Router } from "express";
-import { authController } from "../controllers";
+import { AuthController } from "../controllers";
 import { validate } from "../middlewares";
 import { signUpValidationChains, signInValidationChains } from "../validations";
+import { IUserRepository } from "../interfaces";
+import { AuthService } from "../services";
+import { userRepository } from "../configs";
 
 const router = Router();
 
-router.post(
-  "/sign-up",
-  validate(signUpValidationChains),
-  authController.signUp
-);
+const repository: IUserRepository = userRepository;
+const service = new AuthService(repository);
+const constroller = new AuthController(service);
 
-router.post(
-  "/sign-in",
-  validate(signInValidationChains),
-  authController.signIn
-);
+router.post("/sign-up", validate(signUpValidationChains), constroller.signUp);
+router.post("/sign-in", validate(signInValidationChains), constroller.signIn);
 
 export default router;

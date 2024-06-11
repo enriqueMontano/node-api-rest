@@ -1,13 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { userService } from "../services";
-import { authConfig } from "../configs";
+import { AuthService } from "../services";
 import { logger } from "../utils";
 import { HttpError, isHttpError } from "../middlewares";
 
-export const authController = {
-  signUp: async (
+export class AuthController {
+  constructor(private service: AuthService) {}
+
+  signUp = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -15,24 +14,11 @@ export const authController = {
     try {
       const { name, email, password } = req.body;
 
-      const emailAlreadyExists = await userService.getOneByEmail(email);
-      if (emailAlreadyExists) {
-        throw new HttpError("Email address already in use", 400);
-      }
+      await this.service.signUp(name, email, password);
 
-      // Encrypt and hash the password
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(password, salt);
+      logger.info(`User ${name} signed up successfully with email: ${email}`);
 
-      await userService.createOne({
-        name,
-        email,
-        password: hashedPassword,
-      });
-
-      logger.info(`User ${name} sign up successfully with email: ${email}`);
-
-      res.status(201).json({ message: "User sign up successfully" });
+      res.status(201).json({ message: "User signed up successfully" });
     } catch (error) {
       const statusCode = isHttpError(error) ? error.statusCode : 500;
       const errorMessage = isHttpError(error)
@@ -41,9 +27,9 @@ export const authController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  signIn: async (
+  signIn = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -51,23 +37,9 @@ export const authController = {
     try {
       const { email, password } = req.body;
 
-      const user = await userService.getOneByEmail(email);
-      if (!user) {
-        throw new HttpError("We could not find your email in our system", 403);
-      }
+      const accesToken = await this.service.signIn(email, password);
 
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        throw new HttpError("Wrong password", 403);
-      }
-
-      const accesToken = jwt.sign({ userId: user._id }, authConfig.jwtSecret, {
-        expiresIn: authConfig.jwtExpiration,
-      });
-
-      logger.info(
-        `User ${user.name} sign up successfully with email: ${email}`
-      );
+      logger.info(`User signed in successfully with email: ${email}`);
 
       res.status(200).json({
         message: "Successful login",
@@ -81,5 +53,5 @@ export const authController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
-};
+  };
+}

@@ -4,10 +4,11 @@ import jwt, {
   JsonWebTokenError,
   TokenExpiredError,
 } from "jsonwebtoken";
-import { userService } from "../services";
 import { HttpError, isHttpError } from "../middlewares";
-import { authConfig } from "../configs";
-import { UserRoles } from "../interfaces";
+import { authConfig, userRepository } from "../configs";
+import { IUserRepository, UserRoles } from "../interfaces";
+
+const repository: IUserRepository = userRepository;
 
 export const authenticate = async (
   req: Request,
@@ -25,7 +26,7 @@ export const authenticate = async (
       authConfig.jwtSecret as string
     ) as JwtPayload;
 
-    const user = await userService.getOneById(decodedToken.userId);
+    const user = await repository.getById(decodedToken.userId);
     if (!user) {
       return next(new HttpError("User not found", 404));
     }
