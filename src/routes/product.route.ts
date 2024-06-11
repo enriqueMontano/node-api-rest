@@ -6,7 +6,7 @@ import {
   validate,
 } from "../middlewares";
 import { productController } from "../controllers";
-import { UserRoles } from "../interfaces";
+import { IProductRepository, UserRoles } from "../interfaces";
 import {
   getOneProductValidationChains,
   createProductValidationChains,
@@ -14,15 +14,16 @@ import {
   deleteOneProductValidationChains,
   queryParametersValidationChains,
 } from "../validations";
+import { productRepository } from "../configs";
+import { ProductService } from "../services";
 
 const router = Router();
 
-router.get(
-  "/",
-  authenticate,
-  authorize([UserRoles.Admin]),
-  productController.getAll
-);
+const repository: IProductRepository = productRepository;
+const service = new ProductService(repository);
+const controller = new productController(service);
+
+router.get("/", authenticate, authorize([UserRoles.Admin]), controller.get);
 
 router.get(
   "/search",
@@ -30,14 +31,14 @@ router.get(
   authorize([UserRoles.Admin, UserRoles.User]),
   validate(queryParametersValidationChains),
   sanitizeQuery,
-  productController.search
+  controller.search
 );
 
 router.get(
   "/user",
   authenticate,
   authorize([UserRoles.Admin, UserRoles.User]),
-  productController.getByUser
+  controller.getByUserId
 );
 
 router.get(
@@ -45,7 +46,7 @@ router.get(
   authenticate,
   authorize([UserRoles.Admin, UserRoles.User]),
   validate(getOneProductValidationChains),
-  productController.getOneById
+  controller.getById
 );
 
 router.post(
@@ -53,7 +54,7 @@ router.post(
   authenticate,
   authorize([UserRoles.Admin, UserRoles.User]),
   validate(createProductValidationChains),
-  productController.createOne
+  controller.createOne
 );
 
 router.patch(
@@ -61,7 +62,7 @@ router.patch(
   authenticate,
   authorize([UserRoles.Admin, UserRoles.User]),
   validate(updateOneProductValidationChains),
-  productController.updateOneById
+  controller.update
 );
 
 router.delete(
@@ -69,7 +70,7 @@ router.delete(
   authenticate,
   authorize([UserRoles.Admin, UserRoles.User]),
   validate(deleteOneProductValidationChains),
-  productController.deleteOneById
+  controller.delete
 );
 
 export default router;

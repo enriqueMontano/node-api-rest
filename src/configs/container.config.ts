@@ -1,6 +1,7 @@
-import { IUserRepository } from "../interfaces";
-import { mongoUserRepository } from "../repositories";
+import { IProductRepository, IUserRepository } from "../interfaces";
+import { mongoProductRepository, mongoUserRepository } from "../repositories";
 
 const userRepository: IUserRepository = mongoUserRepository;
+const productRepository: IProductRepository = mongoProductRepository;
 
-export { userRepository };
+export { userRepository, productRepository };

@@ -1,49 +1,85 @@
-import { Product } from "../models";
 import {
   IProduct,
   IProductCreate,
   QueryOptions,
   IProductSearchResult,
+  IProductRepository,
 } from "../interfaces";
+import { HttpError } from "../middlewares";
+import { UserRoles } from "../interfaces";
+import { isProductOwner } from "../utils";
+import mongoose, { ObjectId } from "mongoose";
 
-export const productService = {
-  getAll: async (): Promise<IProduct[] | null> => {
-    return await Product.find();
-  },
+export class ProductService {
+  constructor(private repository: IProductRepository) {}
 
-  search: async (queryOptions: QueryOptions): Promise<IProductSearchResult> => {
-    const { query, sort, skip, limit } = queryOptions;
+  async get(): Promise<IProduct[]> {
+    return this.repository.get();
+  }
 
-    const products = await Product.find(query)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit);
-    const total = await Product.countDocuments(query);
+  async getByUserId(userId: string): Promise<IProduct[]> {
+    return this.repository.getByUserId(userId);
+  }
 
-    return { products, count: products.length, total };
-  },
+  async search(queryOptions: QueryOptions): Promise<IProductSearchResult> {
+    return this.repository.search(queryOptions);
+  }
 
-  getByUser: async (userId: string): Promise<IProduct[] | null> => {
-    return await Product.find({ user: userId });
-  },
+  async getById(id: string): Promise<IProduct | null> {
+    return this.repository.getById(id);
+  }
 
-  getOneById: async (id: string): Promise<IProduct | null> => {
-    return await Product.findById(id);
-  },
+  async createOne(product: IProductCreate): Promise<IProduct> {
+    return await this.repository.save(product);
+  }
 
-  createOne: async (data: IProductCreate): Promise<IProduct | null> => {
-    const product = new Product(data);
-    return await product.save();
-  },
-
-  updateOneById: async (
+  async update(
     id: string,
-    data: Partial<IProduct>
-  ): Promise<IProduct | null> => {
-    return await Product.findByIdAndUpdate(id, data, { new: true });
-  },
+    data: Partial<IProduct>,
+    userRoles: UserRoles[]
+  ): Promise<IProduct | null> {
+    const product = await this.repository.getById(id);
+    if (!product) {
+      throw new HttpError("Product not found", 404);
+    }
 
-  deleteOneById: async (id: string): Promise<IProduct | null> => {
-    return await Product.findByIdAndDelete(id);
-  },
-};
+    const userId = id as string;
+    let productUserId: string | ObjectId;
+    if (product.user instanceof mongoose.Types.ObjectId) {
+      productUserId = product.user.toHexString();
+    } else {
+      productUserId = product.user as unknown as string;
+    }
+
+    const isOwner = isProductOwner(userId, productUserId);
+    const isAdmin = userRoles.includes(UserRoles.Admin);
+    if (!isAdmin && !isOwner) {
+      throw new HttpError("Forbidden", 403);
+    }
+
+    return await this.repository.update(id, data);
+  }
+
+  async delete(id: string, userRoles: UserRoles[]): Promise<void> {
+    const product = await this.repository.getById(id);
+    if (!product) {
+      throw new HttpError("Product not found", 404);
+    }
+
+    const userId = id as string;
+    let productUserId: string | ObjectId;
+    if (product.user instanceof mongoose.Types.ObjectId) {
+      productUserId = product.user.toHexString();
+    } else {
+      productUserId = product.user as unknown as string;
+    }
+
+    const isOwner = isProductOwner(userId, productUserId);
+    const isAdmin = userRoles.includes(UserRoles.Admin);
+    if (!isAdmin && !isOwner) {
+      throw new HttpError("Forbidden", 403);
+    }
+
+    await this.repository.delete(id);
+  }
+}

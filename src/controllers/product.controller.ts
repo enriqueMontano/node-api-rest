@@ -1,18 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose, { ObjectId } from "mongoose";
-import { productService } from "../services";
+import { ProductService } from "../services";
 import { HttpError, isHttpError } from "../middlewares";
 import { isProductOwner, logger } from "../utils";
-import { UserRoles } from "../interfaces";
 
-export const productController = {
-  getAll: async (
+export class productController {
+  constructor(private service: ProductService) {}
+
+  get = async (
     _req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const products = await productService.getAll();
+      const products = await this.service.get();
 
       res.status(200).json(products);
     } catch (error) {
@@ -23,18 +24,34 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  search: async (
+  getByUserId = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const result = await productService.search(req.queryOptions);
-      if (!result) {
-        throw new HttpError("Products not found", 404);
-      }
+      const products = await this.service.getByUserId(req.user.id);
+
+      res.status(200).json(products);
+    } catch (error) {
+      const statusCode = isHttpError(error) ? error.statusCode : 500;
+      const errorMessage = isHttpError(error)
+        ? error.message
+        : "Internal Server Error";
+
+      next(new HttpError(errorMessage, statusCode));
+    }
+  };
+
+  search = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const result = await this.service.search(req.queryOptions);
 
       res.status(200).json(result);
     } catch (error) {
@@ -45,34 +62,15 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  getByUser: async (
+  getById = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const products = await productService.getByUser(req.user.id);
-
-      res.status(200).json(products);
-    } catch (error) {
-      const statusCode = isHttpError(error) ? error.statusCode : 500;
-      const errorMessage = isHttpError(error)
-        ? error.message
-        : "Internal Server Error";
-
-      next(new HttpError(errorMessage, statusCode));
-    }
-  },
-
-  getOneById: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const product = await productService.getOneById(req.params.id);
+      const product = await this.service.getById(req.params.id);
 
       res.status(200).json(product);
     } catch (error) {
@@ -83,15 +81,15 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  createOne: async (
+  createOne = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const newProduct = await productService.createOne({
+      const newProduct = await this.service.createOne({
         user: req.user.id,
         ...req.body,
       });
@@ -107,36 +105,18 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  updateOneById: async (
+  update = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const product = await productService.getOneById(req.params.id);
-      if (!product) {
-        throw new HttpError("Product not found", 404);
-      }
-
-      const userId = req.user.id as string;
-      let productUserId: string | ObjectId;
-      if (product.user instanceof mongoose.Types.ObjectId) {
-        productUserId = product.user.toHexString();
-      } else {
-        productUserId = product.user as unknown as string;
-      }
-
-      const isOwner = isProductOwner(userId, productUserId);
-      const isAdmin = req.user.roles.includes(UserRoles.Admin);
-      if (!isAdmin && !isOwner) {
-        throw new HttpError("Forbidden", 403);
-      }
-
-      const updatedProduct = await productService.updateOneById(
+      const updatedProduct = await this.service.update(
         req.params.id,
-        req.body
+        req.body,
+        req.user.roles
       );
 
       logger.info("Product updated successfully");
@@ -150,34 +130,15 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
+  };
 
-  deleteOneById: async (
+  delete = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const product = await productService.getOneById(req.params.id);
-      if (!product) {
-        throw new HttpError("Product not found", 404);
-      }
-
-      const userId = req.user.id as string;
-      let productUserId: string | ObjectId;
-      if (product.user instanceof mongoose.Types.ObjectId) {
-        productUserId = product.user.toHexString();
-      } else {
-        productUserId = product.user as unknown as string;
-      }
-
-      const isOwner = isProductOwner(userId, productUserId);
-      const isAdmin = req.user.roles.includes(UserRoles.Admin);
-      if (!isAdmin && !isOwner) {
-        throw new HttpError("Forbidden", 403);
-      }
-
-      await productService.deleteOneById(req.params.id);
+      await this.service.delete(req.params.id, req.user.roles);
 
       logger.info("Product deleted successfully");
 
@@ -190,5 +151,5 @@ export const productController = {
 
       next(new HttpError(errorMessage, statusCode));
     }
-  },
-};
+  };
+}
