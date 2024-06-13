@@ -1,25 +1,25 @@
-import { User } from "../models";
-import { IUser, IUserCreate } from "../interfaces";
+import { IUser, IUserCreate, IUserRepository } from "../interfaces";
 
-export const userService = {
-  getAll: async (): Promise<IUser[] | null> => {
-    return await User.find();
-  },
+export class UserService {
+  constructor(private repository: IUserRepository) {}
 
-  getOneById: async (id: string): Promise<IUser | null> => {
-    return await User.findById(id);
-  },
+  async get(): Promise<IUser[]> {
+    return this.repository.get();
+  }
 
-  getOneByEmail: async (email: string): Promise<IUser | null> => {
-    return await User.findOne({ email });
-  },
+  async getById(id: string): Promise<IUser | null> {
+    return this.repository.getById(id);
+  }
 
-  createOne: async (data: IUserCreate): Promise<IUser | null> => {
-    const user = new User(data);
-    return await user.save();
-  },
+  async getByEmail(email: string): Promise<IUser | null> {
+    return this.repository.getByEmail(email);
+  }
 
-  deleteOneById: async (id: string) => {
-    return await User.findByIdAndDelete(id);
-  },
-};
+  async save(user: IUserCreate): Promise<IUser> {
+    return await this.repository.save(user);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+}

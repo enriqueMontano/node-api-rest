@@ -5,11 +5,12 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import mongoose, { Document } from "mongoose";
 import server from "../../src/index";
-import { authConfig } from "../../src/configs";
-import { userService } from "../../src/services";
-import { IUser, UserRoles } from "../../src/interfaces";
+import { authConfig, userRepository, mongo } from "../../src/configs";
+import { IUser, IUserRepository, UserRoles } from "../../src/interfaces";
 
-jest.mock("../../src/services");
+jest.mock("../../src/repositories");
+
+const repository: IUserRepository = userRepository;
 
 const createMockUser = (userData: Partial<IUser>): IUser & Document => {
   return {
@@ -63,8 +64,20 @@ describe("User routes", () => {
   );
   const invalidUserToken = "invalid_token";
 
+  beforeAll(async () => {
+    await mongo.connectDb();
+  });
+  afterAll(async () => {
+    await mongo.disconnectDb();
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        console.log("Server closed");
+        resolve();
+      });
+    });
+  });
   beforeEach(() => {
-    userService.getOneById = jest.fn((id) => {
+    repository.getById = jest.fn((id) => {
       if (id === testUser.id) {
         return Promise.resolve(testUser);
       } else if (id === testAdmin.id) {

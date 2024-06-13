@@ -199,22 +199,25 @@ npm test
 
 ## Project structure
 
+The project is organized as follows:
+
 ```bash
 /src
-  /configs        # Enviroments, db configuration, etc
-  /controllers    
-  /interfaces
-  /middlewares    
-  /models         
-  /routes
-  /scripts
-  /services         
-  /utils          # Helpers and utility functions
-  /validations
-  index.ts        # Entry point
+  /configs        # Configuration files for different environments, dbs configurations, and other settings.
+  /controllers    # Controller functions that handle incoming requests and return responses.
+  /interfaces     # TypeScript interfaces and types that define the structure of data used throughout the application.
+  /middlewares    # Middleware functions for processing requests before they reach the controllers (e.g., authentication, logging).
+  /models         # Database models or ORM entities representing the data schema.
+  /repositories   # Repositories that abstract the data access layer and provide methods to interact with the data source.
+  /routes         # Route definitions mapping URLs to controller functions.
+  /scripts        # Standalone scripts for database migrations, seeders, or other maintenance tasks.
+  /services       # Business logic and services that encapsulate the core functionality of the application.
+  /utils          # Helper and utility functions used throughout the application.
+  /validations    # Schema validations for request data.
+  index.ts        # The main entry point of the application.
 /test
-  /unit
-  /integration
+  /unit           # Unit tests for individual functions.
+  /integration    # Integration tests that verify the interaction between different parts of the application.
 ```
 
 ## Main technologies
