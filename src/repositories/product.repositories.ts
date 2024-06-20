@@ -5,7 +5,7 @@ import {
   IProductRepository,
   IProductSearchResult,
 } from "../interfaces";
-import { Product } from "../models";
+import { Product } from "../models/mongo";
 
 export const mongoProductRepository: IProductRepository = {
   get: async (): Promise<IProduct[]> => {

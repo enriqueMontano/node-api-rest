@@ -59,4 +59,4 @@ const mySql = {
   },
 };
 
-export { mongo, mySql };
+export { mongo, mySql, sequelize };

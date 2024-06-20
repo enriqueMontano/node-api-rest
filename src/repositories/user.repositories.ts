@@ -1,5 +1,5 @@
 import { IUser, IUserCreate, IUserRepository } from "../interfaces";
-import { User } from "../models";
+import { User } from "../models/mongo";
 
 export const mongoUserRepository: IUserRepository = {
   get: async (): Promise<IUser[]> => {
