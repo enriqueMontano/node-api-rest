@@ -1,7 +1,7 @@
-import { IUser, IUserCreate } from "../interfaces";
+import { IUser, IUserCreate, IUserRepository } from "../interfaces";
 import { User } from "../models";
 
-export const mongoUserRepository = {
+export const mongoUserRepository: IUserRepository = {
   get: async (): Promise<IUser[]> => {
     return await User.find();
   },

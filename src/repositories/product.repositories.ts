@@ -1,8 +1,13 @@
 import { QueryOptions } from "mongoose";
-import { IProduct, IProductCreate, IProductSearchResult } from "../interfaces";
+import {
+  IProduct,
+  IProductCreate,
+  IProductRepository,
+  IProductSearchResult,
+} from "../interfaces";
 import { Product } from "../models";
 
-export const mongoProductRepository = {
+export const mongoProductRepository: IProductRepository = {
   get: async (): Promise<IProduct[]> => {
     return await Product.find();
   },
