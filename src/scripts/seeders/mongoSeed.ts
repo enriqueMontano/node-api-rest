@@ -1,5 +1,8 @@
 import { MongoClient } from "mongodb";
 import * as bcrypt from "bcrypt";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 async function seedDatabase() {
   const url = process.env.MONGO_URI || "mongodb://127.0.0.1/";

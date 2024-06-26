@@ -5,12 +5,13 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import mongoose, { Document } from "mongoose";
 import server from "../../src/index";
-import { authConfig, userRepository, mongo } from "../../src/configs";
+import { authConfig, mongo } from "../../src/configs";
 import { IUser, IUserRepository, UserRoles } from "../../src/interfaces";
+import { mongoUserRepository } from "../../src/repositories";
 
 jest.mock("../../src/repositories");
 
-const repository: IUserRepository = userRepository;
+const repository: IUserRepository = mongoUserRepository;
 
 const createMockUser = (userData: Partial<IUser>): IUser & Document => {
   return {
@@ -19,7 +20,7 @@ const createMockUser = (userData: Partial<IUser>): IUser & Document => {
     isNew: false,
     save: jest.fn(),
     remove: jest.fn(),
-  } as IUser & Document;
+  } as unknown as IUser & Document;
 };
 
 const agent = new https.Agent({
@@ -77,12 +78,17 @@ describe("User routes", () => {
     });
   });
   beforeEach(() => {
-    repository.getById = jest.fn((id) => {
+    repository.getById = jest.fn((id: string) => {
+      console.log("id: ", id);
       if (id === testUser.id) {
+        console.log("user", testUser.id);
         return Promise.resolve(testUser);
       } else if (id === testAdmin.id) {
+        console.log("admin", testAdmin);
+
         return Promise.resolve(testAdmin);
       } else {
+        console.log("null");
         return Promise.resolve(null);
       }
     });

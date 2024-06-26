@@ -1,20 +1,28 @@
 import mongoose, { ObjectId } from "mongoose";
 import { HttpError } from "../middlewares";
+import { UUID } from "crypto";
+import { isMongoId, isUUID } from "validator";
 
-export const isProductOwner = async (
+export const isProductOwner = (
   requestUserId: string,
-  productUserId: string | ObjectId
-): Promise<boolean> => {
+  productUserId: string | ObjectId | UUID
+): boolean => {
+  const isValidMongoId = (id: string): boolean => isMongoId(id);
+  const isValidUUID = (id: string): boolean => isUUID(id);
+
   if (
-    !mongoose.Types.ObjectId.isValid(requestUserId) ||
-    !mongoose.Types.ObjectId.isValid(productUserId as string)
+    isValidMongoId(requestUserId) &&
+    isValidMongoId(productUserId as string)
   ) {
-    throw new HttpError("Invalid mongo id", 400);
+    const objectId1 = new mongoose.Types.ObjectId(requestUserId);
+    const objectId2 = new mongoose.Types.ObjectId(productUserId as string);
+    return objectId1.equals(objectId2);
+  } else if (
+    isValidUUID(requestUserId) &&
+    isValidUUID(productUserId as string)
+  ) {
+    return requestUserId === productUserId;
+  } else {
+    throw new HttpError("Invalid Id", 400);
   }
-
-  const objectId1 = new mongoose.Types.ObjectId(requestUserId);
-  const objectId2 = new mongoose.Types.ObjectId(productUserId as string);
-  const areEqual = objectId1.equals(objectId2);
-
-  return areEqual;
 };

@@ -1,46 +1,56 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../../configs/dbs.config";
-import { UserRoles } from "../../interfaces";
+import {
+  Model,
+  Column,
+  Table,
+  DataType,
+  HasMany,
+  CreatedAt,
+  UpdatedAt,
+} from "sequelize-typescript";
+import { IUser, IUserCreate, UserRoles } from "../../interfaces";
+import Product from "./product.model";
 
-class User extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
-  public roles!: UserRoles[];
+@Table({ tableName: "users", modelName: "User", timestamps: true })
+export default class User extends Model<IUser, IUserCreate> {
+  @Column({
+    primaryKey: true,
+    allowNull: false,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  @Column({ allowNull: false, type: DataType.STRING })
+  name!: string;
+
+  @Column({ allowNull: false, unique: true, type: DataType.STRING })
+  email!: string;
+
+  @Column({ allowNull: false, type: DataType.STRING })
+  password!: string;
+
+  @Column({
+    allowNull: false,
+    type: DataType.JSON,
+    values: Object.values(UserRoles),
+    defaultValue: [UserRoles.User],
+  })
+  roles!: UserRoles[];
+
+  @HasMany(() => Product)
+  products!: Product[];
+
+  @CreatedAt
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  createdAt!: Date;
+
+  @UpdatedAt
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  updatedAt!: Date;
 }
-
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    roles: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-      defaultValue: [UserRoles.User],
-    },
-  },
-  {
-    sequelize,
-    modelName: "User",
-    timestamps: true,
-  }
-);
-
-export default User;

@@ -1,56 +1,56 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../../configs/dbs.config";
+import {
+  Model,
+  Column,
+  Table,
+  ForeignKey,
+  BelongsTo,
+  DataType,
+  CreatedAt,
+  UpdatedAt,
+} from "sequelize-typescript";
+import { User } from "./index";
+import { IProduct, IProductCreate } from "../../interfaces";
 
-class Product extends Model {
-  public id!: number;
-  public name!: string;
-  public description!: string;
-  public category!: string;
-  public price!: number;
-  public userId!: number;
+@Table({ tableName: "products", modelName: "Product", timestamps: true })
+export default class Product extends Model<IProduct, IProductCreate> {
+  @Column({
+    primaryKey: true,
+    allowNull: false,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
 
-  static associate(models: any) {
-    Product.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
-  }
+  @Column({ allowNull: false, type: DataType.STRING })
+  name!: string;
+
+  @Column({ allowNull: false, type: DataType.STRING })
+  description!: string;
+
+  @Column({ allowNull: false, type: DataType.STRING })
+  category!: string;
+
+  @Column({ allowNull: false, type: DataType.FLOAT })
+  price!: number;
+
+  @ForeignKey(() => User)
+  @Column({ allowNull: false, type: DataType.UUID })
+  userId!: string;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @CreatedAt
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  createdAt!: Date;
+
+  @UpdatedAt
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  updatedAt!: Date;
 }
-
-Product.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    price: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "User",
-        key: "id",
-      },
-    },
-  },
-  {
-    sequelize,
-    modelName: "Product",
-    timestamps: true,
-  }
-);
-
-export default Product;

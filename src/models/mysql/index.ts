@@ -1,2 +1,4 @@
-export * from "./user.model";
-export * from "./product.model";
+import User from "./user.model";
+import Product from "./product.model";
+
+export { User, Product };

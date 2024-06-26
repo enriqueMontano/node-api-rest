@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { logger } from "../utils";
-import { Sequelize } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
+import { User, Product } from "../models/mysql";
 
 dotenv.config();
+
+const databaseType = process.env.DATABASE_TYPE as string;
 
 // Mongo db connection
 const mongoDbUri = (process.env.MONGO_URI as string) || "mongodb://127.0.0.1/";
@@ -34,9 +37,11 @@ const mongo = {
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: (process.env.MYSQL_URI as string) || "localhost",
+  port: Number(process.env.MYSQL_PORT) || 3306,
   username: (process.env.MYSQL_USER as string) || "root",
   password: (process.env.MYSQL_PASSWORD as string) || "",
   database: (process.env.MYSQL_DB_NAME as string) || "",
+  models: [User, Product],
 });
 const mySql = {
   connectDb: async (): Promise<void> => {
@@ -59,4 +64,4 @@ const mySql = {
   },
 };
 
-export { mongo, mySql, sequelize };
+export { mongo, mySql, sequelize, databaseType };

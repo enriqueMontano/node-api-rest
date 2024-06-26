@@ -1,11 +1,14 @@
-import { Document, ObjectId } from "mongoose";
+import { ObjectId } from "mongoose";
 import { QueryOptions } from "./query.interface";
-export interface IProduct extends Document {
+export interface IProduct {
+  id: string;
   name: string;
   description: string;
   category: string;
   price: number;
-  user: ObjectId;
+  userId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IProductCreate {
@@ -13,7 +16,7 @@ export interface IProductCreate {
   description: string;
   category: string;
   price: number;
-  user: string;
+  userId: string;
 }
 
 export interface IProductSearchResult {

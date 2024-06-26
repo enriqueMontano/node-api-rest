@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import mongoose, { ObjectId } from "mongoose";
 import { ProductService } from "../services";
 import { HttpError, isHttpError } from "../middlewares";
-import { isProductOwner, logger } from "../utils";
+import { logger } from "../utils";
 
 export class productController {
   constructor(private service: ProductService) {}
@@ -90,7 +89,7 @@ export class productController {
   ): Promise<void> => {
     try {
       const newProduct = await this.service.createOne({
-        user: req.user.id,
+        userId: req.user.id,
         ...req.body,
       });
 
