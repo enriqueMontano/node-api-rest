@@ -3,7 +3,6 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
-import { v4 as uuidV4 } from "uuid";
 import server from "../../src/index";
 import { authConfig, mongo, databaseType, mySql } from "../../src/configs";
 import { IUser, UserRoles } from "../../src/interfaces";
