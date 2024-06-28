@@ -1,23 +1,30 @@
-import { IProductRepository, IUserRepository } from "../interfaces";
+import {
+  DatabaseType,
+  IProductRepository,
+  IUserRepository,
+} from "../interfaces";
 import { databaseType } from "./dbs.config";
 import {
   MongoProductRepository,
   MongoUserRepository,
-  MySqlUserRepository,
-  MySqlProductRepository,
+  SqlUserRepository,
+  SqlProductRepository,
 } from "../repositories";
 
 let productRepository: IProductRepository;
 let userRepository: IUserRepository;
 
-if (databaseType === "mongo") {
+if (databaseType === DatabaseType.MongoDB) {
   productRepository = new MongoProductRepository();
   userRepository = new MongoUserRepository();
-} else if (databaseType === "mysql") {
-  productRepository = new MySqlProductRepository();
-  userRepository = new MySqlUserRepository();
+} else if (
+  databaseType === DatabaseType.MySQL ||
+  databaseType === DatabaseType.PostgreSQL
+) {
+  productRepository = new SqlProductRepository();
+  userRepository = new SqlUserRepository();
 } else {
-  throw new Error("Invalid DATABASE_TYPE specified");
+  throw new Error("Invalid DB_TYPE specified");
 }
 
 export { userRepository, productRepository };

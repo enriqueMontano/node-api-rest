@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function seedDatabase() {
-  const url = process.env.MONGO_URI || "mongodb://127.0.0.1/";
-  const dbName = process.env.MONGO_DB_NAME || "test";
+  const url = process.env.DB_URI || "mongodb://127.0.0.1/";
+  const dbName = process.env.DB_NAME || "test";
 
   // Encrypt and hash the password
   const password = "0000";

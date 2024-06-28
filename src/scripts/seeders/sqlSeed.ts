@@ -1,15 +1,13 @@
 import * as bcrypt from "bcrypt";
-import { User } from "../../models/mysql";
+import { User } from "../../models/sql";
 import { UserRoles } from "../../interfaces";
-import { sequelize } from "../../configs";
+import { sequelizeOrm } from "../../configs";
 
 const initDb = async () => {
   try {
-    await sequelize.authenticate();
-    console.log("Connection has been established successfully.");
+    await sequelizeOrm.connectDb();
 
-    await sequelize.sync({ force: true }); // just for testing environments
-    console.log("All models were synchronized successfully.");
+    await sequelizeOrm.syncDb(true); // just for testing environments
 
     // Encrypt and hash the password
     const password = "0000";
@@ -25,7 +23,7 @@ const initDb = async () => {
   } catch (error) {
     console.error("Error synchronizing the database:", error);
   } finally {
-    await sequelize.close();
+    await sequelizeOrm.disconnectDb();
   }
 };
 

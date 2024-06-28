@@ -7,12 +7,13 @@ import helmet from "helmet";
 import router from "./routes";
 import { errorHandler, morganMiddleware, forceHttps } from "./middlewares";
 import { logger } from "./utils";
-import { appConfig, mongo, mySql, databaseType } from "./configs";
+import { appConfig, mongoDb, sequelizeOrm, databaseType } from "./configs";
+import { DatabaseType } from "./interfaces";
 
-if (databaseType === "mongo") {
-  mongo.connectDb();
+if (databaseType === DatabaseType.MongoDB) {
+  mongoDb.connect();
 } else {
-  mySql.connectDb();
+  sequelizeOrm.connectDb();
 }
 
 const app: Application = express();

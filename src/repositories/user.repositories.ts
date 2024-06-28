@@ -1,6 +1,6 @@
 import { IUser, IUserCreate, IUserRepository } from "../interfaces";
 import { User as MongoUser } from "../models/mongo";
-import { User as MySqlUser } from "../models/mysql";
+import { User as SqlUser } from "../models/sql";
 
 class MongoUserRepository implements IUserRepository {
   async get(): Promise<IUser[]> {
@@ -27,30 +27,30 @@ class MongoUserRepository implements IUserRepository {
   }
 }
 
-class MySqlUserRepository implements IUserRepository {
+class SqlUserRepository implements IUserRepository {
   async get(): Promise<IUser[]> {
-    const users = await MySqlUser.findAll();
+    const users = await SqlUser.findAll();
     return users.map((user) => user.get({ plain: true }));
   }
 
   async getById(id: string): Promise<IUser | null> {
-    const user = await MySqlUser.findByPk(id);
+    const user = await SqlUser.findByPk(id);
     return user ? user.get({ plain: true }) : null;
   }
 
   async getByEmail(email: string): Promise<IUser | null> {
-    const user = await MySqlUser.findOne({ where: { email } });
+    const user = await SqlUser.findOne({ where: { email } });
     return user ? user.get({ plain: true }) : null;
   }
 
   async save(user: IUserCreate): Promise<IUser> {
-    const newUser = await MySqlUser.create({ ...user });
+    const newUser = await SqlUser.create({ ...user });
     return newUser.get({ plain: true });
   }
 
   async delete(id: string): Promise<void> {
-    await MySqlUser.destroy({ where: { id } });
+    await SqlUser.destroy({ where: { id } });
   }
 }
 
-export { MongoUserRepository, MySqlUserRepository };
+export { MongoUserRepository, SqlUserRepository };

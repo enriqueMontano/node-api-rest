@@ -1,18 +1,21 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { logger } from "../utils";
+import { Dialect } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
-import { User, Product } from "../models/mysql";
+import { logger } from "../utils";
+import { User, Product } from "../models/sql";
+import { DatabaseType } from "../interfaces";
 
 dotenv.config();
 
-const databaseType = process.env.DATABASE_TYPE as string;
+const databaseType =
+  (process.env.DB_TYPE as DatabaseType) || DatabaseType.MySQL;
 
 // Mongo db connection
-const mongoDbUri = (process.env.MONGO_URI as string) || "mongodb://127.0.0.1/";
-const mongoDbName = (process.env.MONGO_DB_NAME as string) || "test";
-const mongo = {
-  connectDb: async (): Promise<void> => {
+const mongoDbUri = (process.env.DB_URI as string) || "mongodb://127.0.0.1/";
+const mongoDbName = (process.env.DB_NAME as string) || "test";
+const mongoDb = {
+  connect: async (): Promise<void> => {
     try {
       await mongoose.connect(mongoDbUri + mongoDbName);
       logger.info("MongoDB connected successfully");
@@ -22,7 +25,7 @@ const mongo = {
     }
   },
 
-  disconnectDb: async (): Promise<void> => {
+  disconnect: async (): Promise<void> => {
     try {
       await mongoose.disconnect();
       logger.info("MongoDB disconnected successfully");
@@ -33,35 +36,58 @@ const mongo = {
   },
 };
 
-// MySQL db connection
-const sequelize = new Sequelize({
-  dialect: "mysql",
-  host: (process.env.MYSQL_URI as string) || "localhost",
-  port: Number(process.env.MYSQL_PORT) || 3306,
-  username: (process.env.MYSQL_USER as string) || "root",
-  password: (process.env.MYSQL_PASSWORD as string) || "",
-  database: (process.env.MYSQL_DB_NAME as string) || "",
-  models: [User, Product],
-});
-const mySql = {
+// Sequelize db connection
+let sequelize: Sequelize | null = null;
+if (databaseType !== DatabaseType.MongoDB) {
+  sequelize = new Sequelize({
+    dialect: databaseType as Dialect,
+    host: process.env.DB_URI || "localhost",
+    port: Number(process.env.DB_PORT) || 3306,
+    username: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "test",
+    models: [User, Product],
+    logging: (msg) => logger.debug(msg),
+  });
+}
+
+const sequelizeOrm = {
   connectDb: async (): Promise<void> => {
-    try {
-      await sequelize.authenticate();
-      logger.info("MySQL connected successfully");
-    } catch (error) {
-      logger.error(`MySQL connection error: ${error}`);
-      process.exit(1);
+    if (sequelize) {
+      try {
+        await sequelize.authenticate();
+        logger.info(`${databaseType} db connected successfully`);
+      } catch (error) {
+        logger.error(`${databaseType} db connection error: ${error}`);
+        process.exit(1);
+      }
+    } else {
+      logger.warn("No Sequelize instance initialized for current DB_TYPE");
     }
   },
 
   disconnectDb: async (): Promise<void> => {
-    try {
-      await sequelize.close();
-      logger.info("MySQL disconnected successfully");
-    } catch (error) {
-      logger.error(`MySQL disconnection error: ${error}`);
+    if (sequelize) {
+      try {
+        await sequelize.close();
+        logger.info(`${databaseType} db disconnected successfully`);
+      } catch (error) {
+        logger.error(`${databaseType} db disconnection error: ${error}`);
+      }
+    }
+  },
+
+  syncDb: async (force: boolean): Promise<void> => {
+    if (sequelize) {
+      try {
+        await sequelize.sync({ force });
+        logger.info("All models were synchronized successfully");
+      } catch (error) {
+        logger.error(`Sync error: ${error}`);
+        process.exit(1);
+      }
     }
   },
 };
 
-export { mongo, mySql, sequelize, databaseType };
+export { mongoDb, sequelizeOrm, databaseType };

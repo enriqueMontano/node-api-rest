@@ -6,7 +6,7 @@ import {
   QueryOptions,
 } from "../interfaces";
 import { Product as MongoProduct } from "../models/mongo";
-import { Product as MySqlProduct } from "../models/mysql";
+import { Product as SqlProduct } from "../models/sql";
 import { buildOrderClause, buildWhereClause } from "../utils";
 
 class MongoProductRepository implements IProductRepository {
@@ -52,26 +52,26 @@ class MongoProductRepository implements IProductRepository {
   }
 }
 
-class MySqlProductRepository implements IProductRepository {
+class SqlProductRepository implements IProductRepository {
   async get(): Promise<IProduct[]> {
-    const products = await MySqlProduct.findAll();
+    const products = await SqlProduct.findAll();
     return products.map((product) => product.get({ plain: true }));
   }
 
   async getById(id: string): Promise<IProduct | null> {
-    const product = await MySqlProduct.findByPk(id);
+    const product = await SqlProduct.findByPk(id);
     return product ? product.get({ plain: true }) : null;
   }
 
   async getByUserId(userId: string): Promise<IProduct[]> {
-    const products = await MySqlProduct.findAll({ where: { userId } });
+    const products = await SqlProduct.findAll({ where: { userId } });
     return products.map((product) => product.get({ plain: true }));
   }
 
   async search(queryOptions: QueryOptions): Promise<IProductSearchResult> {
     const { query = {}, sort, skip = 0, limit = 10 } = queryOptions;
 
-    const { rows, count } = await MySqlProduct.findAndCountAll({
+    const { rows, count } = await SqlProduct.findAndCountAll({
       where: buildWhereClause(query),
       order: buildOrderClause(sort),
       limit: limit,
@@ -90,7 +90,7 @@ class MySqlProductRepository implements IProductRepository {
   }
 
   async save(product: IProductCreate): Promise<IProduct> {
-    const newProduct = await MySqlProduct.create({ ...product });
+    const newProduct = await SqlProduct.create({ ...product });
     return newProduct.get({ plain: true });
   }
 
@@ -98,7 +98,7 @@ class MySqlProductRepository implements IProductRepository {
     id: string,
     product: Partial<IProduct>
   ): Promise<IProduct | null> {
-    const [numberOfAffectedRows] = await MySqlProduct.update(product, {
+    const [numberOfAffectedRows] = await SqlProduct.update(product, {
       where: { id },
       returning: true,
     });
@@ -107,13 +107,13 @@ class MySqlProductRepository implements IProductRepository {
       return null;
     }
 
-    const updatedProduct = await MySqlProduct.findByPk(id);
+    const updatedProduct = await SqlProduct.findByPk(id);
     return updatedProduct ? updatedProduct.get({ plain: true }) : null;
   }
 
   async delete(id: string): Promise<void> {
-    await MySqlProduct.destroy({ where: { id } });
+    await SqlProduct.destroy({ where: { id } });
   }
 }
 
-export { MongoProductRepository, MySqlProductRepository };
+export { MongoProductRepository, SqlProductRepository };

@@ -11,7 +11,7 @@
     "start": "node dist/index.js",
     "test": "jest --detectOpenHandles",
     "seed:mongo": "ts-node src/scripts/seeders/mongoSeed.ts",
-    "seed:mysql": "ts-node src/scripts/seeders/mysqlSeed.ts"
+    "seed:sql": "ts-node src/scripts/seeders/sqlSeed.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -24,6 +24,7 @@
     "mongoose": "^8.4.0",
     "morgan": "^1.10.0",
     "mysql2": "^3.10.1",
+    "pg": "^8.12.0",
     "sequelize": "^6.37.3",
     "sequelize-typescript": "^2.1.6",
     "supertest": "^7.0.0",

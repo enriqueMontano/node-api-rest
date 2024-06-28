@@ -9,7 +9,6 @@ import { HttpError } from "../middlewares";
 import { UserRoles } from "../interfaces";
 import { isProductOwner } from "../utils";
 import mongoose, { ObjectId } from "mongoose";
-import { databaseType } from "../configs";
 import { UUID } from "crypto";
 
 export class ProductService {

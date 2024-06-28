@@ -4,8 +4,13 @@ import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
 import server from "../../src/index";
-import { authConfig, mongo, databaseType, mySql } from "../../src/configs";
-import { IUser, UserRoles } from "../../src/interfaces";
+import {
+  authConfig,
+  mongoDb,
+  databaseType,
+  sequelizeOrm,
+} from "../../src/configs";
+import { DatabaseType, IUser, UserRoles } from "../../src/interfaces";
 
 jest.mock("../../src/configs", () => {
   const actualConfigs = jest.requireActual("../../src/configs");
@@ -40,7 +45,7 @@ const agent = new https.Agent({
 describe("User routes", () => {
   const testUser = createMockUser({
     id:
-      databaseType === "mongo"
+      databaseType === DatabaseType.MongoDB
         ? "6655aeb1b8fe6ab6df49691a"
         : "2a4b845e-5430-4c7c-9df4-b2aa0d717550",
     roles: [UserRoles.User],
@@ -50,7 +55,7 @@ describe("User routes", () => {
   });
   const testAdmin = createMockUser({
     id:
-      databaseType === "mongo"
+      databaseType === DatabaseType.MongoDB
         ? "6655b251408318022ab47a9d"
         : "7cbb6a87-c9de-4129-b94e-287b784c0b9a",
     roles: [UserRoles.Admin],
@@ -77,18 +82,18 @@ describe("User routes", () => {
   const invalidUserToken = "invalid_token";
 
   beforeAll(async () => {
-    if (databaseType === "mongo") {
-      await mongo.connectDb();
+    if (databaseType === DatabaseType.MongoDB) {
+      await mongoDb.connect();
     } else {
-      await mySql.connectDb();
+      await sequelizeOrm.connectDb();
     }
   });
 
   afterAll(async () => {
-    if (databaseType === "mongo") {
-      await mongo.disconnectDb();
+    if (databaseType === DatabaseType.MongoDB) {
+      await mongoDb.disconnect();
     } else {
-      await mySql.disconnectDb();
+      await sequelizeOrm.disconnectDb();
     }
     await new Promise<void>((resolve) => {
       server.close(() => {
