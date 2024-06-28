@@ -1,7 +1,7 @@
 import { IUser, IUserCreate, IUserRepository } from "../interfaces";
 
 export class UserService {
-  constructor(private repository: IUserRepository) {}
+  constructor(private readonly repository: IUserRepository) {}
 
   async get(): Promise<IUser[]> {
     return this.repository.get();

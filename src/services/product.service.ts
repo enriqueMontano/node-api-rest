@@ -13,7 +13,7 @@ import { databaseType } from "../configs";
 import { UUID } from "crypto";
 
 export class ProductService {
-  constructor(private repository: IProductRepository) {}
+  constructor(private readonly repository: IProductRepository) {}
 
   async get(): Promise<IProduct[]> {
     return this.repository.get();

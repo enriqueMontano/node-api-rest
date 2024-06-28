@@ -4,7 +4,7 @@ import { HttpError, isHttpError } from "../middlewares";
 import { logger } from "../utils";
 
 export class productController {
-  constructor(private service: ProductService) {}
+  constructor(private readonly service: ProductService) {}
 
   get = async (
     _req: Request,

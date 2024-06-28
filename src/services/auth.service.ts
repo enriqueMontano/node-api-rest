@@ -5,7 +5,7 @@ import { HttpError } from "../middlewares";
 import { authConfig } from "../configs";
 
 export class AuthService {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private readonly userRepository: IUserRepository) {}
 
   async signUp(name: string, email: string, password: string): Promise<void> {
     const emailAlreadyExists = await this.userRepository.getByEmail(email);

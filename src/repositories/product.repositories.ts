@@ -9,16 +9,21 @@ import { Product as MongoProduct } from "../models/mongo";
 import { Product as MySqlProduct } from "../models/mysql";
 import { buildOrderClause, buildWhereClause } from "../utils";
 
-const mongoProductRepository: IProductRepository = {
-  get: async (): Promise<IProduct[]> => {
+class MongoProductRepository implements IProductRepository {
+  async get(): Promise<IProduct[]> {
     return await MongoProduct.find();
-  },
+  }
 
-  getByUserId: async (userId: string): Promise<IProduct[]> => {
+  async getById(id: string): Promise<IProduct | null> {
+    const product = await MongoProduct.findById(id);
+    return product ? product : null;
+  }
+
+  async getByUserId(userId: string): Promise<IProduct[]> {
     return await MongoProduct.find({ userId });
-  },
+  }
 
-  search: async (queryOptions: QueryOptions): Promise<IProductSearchResult> => {
+  async search(queryOptions: QueryOptions): Promise<IProductSearchResult> {
     const { query = {}, sort = {}, skip = 0, limit = 10 } = queryOptions;
 
     const products = await MongoProduct.find(query)
@@ -28,52 +33,42 @@ const mongoProductRepository: IProductRepository = {
     const total = await MongoProduct.countDocuments(query);
 
     return { products, count: products.length, total };
-  },
+  }
 
-  getById: async (id: string): Promise<IProduct | null> => {
-    const product = await MongoProduct.findById(id);
-    if (!product) {
-      return null;
-    }
-    return product;
-  },
-
-  save: async (product: IProductCreate): Promise<IProduct> => {
+  async save(product: IProductCreate): Promise<IProduct> {
     const newProduct = new MongoProduct(product);
     return await newProduct.save();
-  },
+  }
 
-  update: async (
+  async update(
     id: string,
     product: Partial<IProduct>
-  ): Promise<IProduct | null> => {
+  ): Promise<IProduct | null> {
     return await MongoProduct.findByIdAndUpdate(id, product, { new: true });
-  },
+  }
 
-  delete: async (id: string): Promise<void> => {
+  async delete(id: string): Promise<void> {
     await MongoProduct.findByIdAndDelete(id);
-  },
-};
+  }
+}
 
-const mySqlProductRepository: IProductRepository = {
-  get: async (): Promise<IProduct[]> => {
+class MySqlProductRepository implements IProductRepository {
+  async get(): Promise<IProduct[]> {
     const products = await MySqlProduct.findAll();
     return products.map((product) => product.get({ plain: true }));
-  },
+  }
 
-  getById: async (id: string): Promise<IProduct | null> => {
+  async getById(id: string): Promise<IProduct | null> {
     const product = await MySqlProduct.findByPk(id);
     return product ? product.get({ plain: true }) : null;
-  },
+  }
 
-  getByUserId: async (userId: string): Promise<IProduct[]> => {
+  async getByUserId(userId: string): Promise<IProduct[]> {
     const products = await MySqlProduct.findAll({ where: { userId } });
-    return products
-      ? products.map((product) => product.get({ plain: true }))
-      : [];
-  },
+    return products.map((product) => product.get({ plain: true }));
+  }
 
-  search: async (queryOptions: QueryOptions): Promise<IProductSearchResult> => {
+  async search(queryOptions: QueryOptions): Promise<IProductSearchResult> {
     const { query = {}, sort, skip = 0, limit = 10 } = queryOptions;
 
     const { rows, count } = await MySqlProduct.findAndCountAll({
@@ -92,17 +87,17 @@ const mySqlProductRepository: IProductRepository = {
       count: products.length,
       total: count,
     };
-  },
+  }
 
-  save: async (product: IProductCreate): Promise<IProduct> => {
+  async save(product: IProductCreate): Promise<IProduct> {
     const newProduct = await MySqlProduct.create({ ...product });
     return newProduct.get({ plain: true });
-  },
+  }
 
-  update: async (
+  async update(
     id: string,
     product: Partial<IProduct>
-  ): Promise<IProduct | null> => {
+  ): Promise<IProduct | null> {
     const [numberOfAffectedRows] = await MySqlProduct.update(product, {
       where: { id },
       returning: true,
@@ -114,11 +109,11 @@ const mySqlProductRepository: IProductRepository = {
 
     const updatedProduct = await MySqlProduct.findByPk(id);
     return updatedProduct ? updatedProduct.get({ plain: true }) : null;
-  },
+  }
 
-  delete: async (id: string): Promise<void> => {
+  async delete(id: string): Promise<void> {
     await MySqlProduct.destroy({ where: { id } });
-  },
-};
+  }
+}
 
-export { mongoProductRepository, mySqlProductRepository };
+export { MongoProductRepository, MySqlProductRepository };
