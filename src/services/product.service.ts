@@ -9,9 +9,10 @@ import { HttpError } from "../middlewares";
 import { UserRoles } from "../interfaces";
 import { isProductOwner } from "../utils";
 import mongoose, { ObjectId } from "mongoose";
+import { UUID } from "crypto";
 
 export class ProductService {
-  constructor(private repository: IProductRepository) {}
+  constructor(private readonly repository: IProductRepository) {}
 
   async get(): Promise<IProduct[]> {
     return this.repository.get();
@@ -43,12 +44,12 @@ export class ProductService {
       throw new HttpError("Product not found", 404);
     }
 
-    const userId = id as string;
-    let productUserId: string | ObjectId;
-    if (product.user instanceof mongoose.Types.ObjectId) {
-      productUserId = product.user.toHexString();
+    const userId: string = id;
+    let productUserId: string | ObjectId | UUID;
+    if (product.userId instanceof mongoose.Types.ObjectId) {
+      productUserId = product.userId.toHexString();
     } else {
-      productUserId = product.user as unknown as string;
+      productUserId = product.userId as unknown as string;
     }
 
     const isOwner = isProductOwner(userId, productUserId);
@@ -66,12 +67,12 @@ export class ProductService {
       throw new HttpError("Product not found", 404);
     }
 
-    const userId = id as string;
-    let productUserId: string | ObjectId;
-    if (product.user instanceof mongoose.Types.ObjectId) {
-      productUserId = product.user.toHexString();
+    const userId: string = id;
+    let productUserId: string | ObjectId | UUID;
+    if (product.userId instanceof mongoose.Types.ObjectId) {
+      productUserId = product.userId.toHexString();
     } else {
-      productUserId = product.user as unknown as string;
+      productUserId = product.userId as unknown as string;
     }
 
     const isOwner = isProductOwner(userId, productUserId);

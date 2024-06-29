@@ -4,7 +4,7 @@ import { HttpError, isHttpError } from "../middlewares";
 import { logger } from "../utils";
 
 export class UserController {
-  constructor(private service: UserService) {}
+  constructor(private readonly service: UserService) {}
 
   get = async (
     _req: Request,
@@ -36,7 +36,7 @@ export class UserController {
       logger.info(`User deleted`);
 
       res.status(200).json({
-        message: "User deleted succesfully",
+        message: "User deleted successfully",
       });
     } catch (error) {
       const statusCode = isHttpError(error) ? error.statusCode : 500;

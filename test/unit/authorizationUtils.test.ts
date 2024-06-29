@@ -9,7 +9,7 @@ describe("isProductOwner function", () => {
     jest.resetAllMocks();
   });
 
-  it("should returns true if ids are valids and equals", async () => {
+  it("should returns true if mongo ids are valids and equals", async () => {
     const mockRequestUserId = "6654e85c8a0dd46e7d9c4fd7";
     const mockProductUserId = "6654e85c8a0dd46e7d9c4fd7";
 
@@ -20,11 +20,11 @@ describe("isProductOwner function", () => {
       true
     );
 
-    const result = await isProductOwner(mockRequestUserId, mockProductUserId);
+    const result = isProductOwner(mockRequestUserId, mockProductUserId);
     expect(result).toBe(true);
   });
 
-  it("should returns false if ids are valids but not equals", async () => {
+  it("should returns false if mongo ids are valids but not equals", async () => {
     const mockRequestUserId = "6654e86525f7b984ca55657a";
     const mockProductUserId = "6654e86bcfd5479dce448075";
 
@@ -35,7 +35,7 @@ describe("isProductOwner function", () => {
       false
     );
 
-    const result = await isProductOwner(mockRequestUserId, mockProductUserId);
+    const result = isProductOwner(mockRequestUserId, mockProductUserId);
     expect(result).toBe(false);
   });
 
@@ -47,9 +47,16 @@ describe("isProductOwner function", () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true);
 
-    await expect(
-      isProductOwner(mockRequestUserId, mockProductUserId)
-    ).rejects.toThrow(HttpError);
+    expect(() => {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    }).toThrow(HttpError);
+
+    try {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    } catch (error) {
+      expect((error as HttpError).message).toBe("Invalid Id");
+      expect((error as HttpError).statusCode).toBe(400);
+    }
   });
 
   it("should throw HttpError if productUserId is an invalid mongo id", async () => {
@@ -60,8 +67,63 @@ describe("isProductOwner function", () => {
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false);
 
-    await expect(
-      isProductOwner(mockRequestUserId, mockProductUserId)
-    ).rejects.toThrow(HttpError);
+    expect(() => {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    }).toThrow(HttpError);
+
+    try {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    } catch (error) {
+      expect((error as HttpError).message).toBe("Invalid Id");
+      expect((error as HttpError).statusCode).toBe(400);
+    }
+  });
+
+  it("should returns true if both UUIDs are valids and equals", async () => {
+    const mockRequestUserId = "69f82092-28d8-4d99-87b8-c64a8ddbe0fd";
+    const mockProductUserId = "69f82092-28d8-4d99-87b8-c64a8ddbe0fd";
+
+    const result = isProductOwner(mockRequestUserId, mockProductUserId);
+    expect(result).toBe(true);
+  });
+
+  it("should returns false if UUIDs are valids but not equals", async () => {
+    const mockRequestUserId = "166e1c27-ee9e-4903-a20c-1b7b680e0156";
+    const mockProductUserId = "cab1e23b-9d6c-4523-899c-fc6d53b741a8";
+
+    const result = isProductOwner(mockRequestUserId, mockProductUserId);
+    expect(result).toBe(false);
+  });
+
+  it("should throw HttpError if requestUserId is an invalid UUID", async () => {
+    const mockRequestUserId = "invalid_id";
+    const mockProductUserId = "cab1e23b-9d6c-4523-899c-fc6d53b741a8";
+
+    expect(() => {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    }).toThrow(HttpError);
+
+    try {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    } catch (error) {
+      expect((error as HttpError).message).toBe("Invalid Id");
+      expect((error as HttpError).statusCode).toBe(400);
+    }
+  });
+
+  it("should throw HttpError if productUserId is an invalid UUID", async () => {
+    const mockRequestUserId = "cab1e23b-9d6c-4523-899c-fc6d53b741a8";
+    const mockProductUserId = "invalid_id";
+
+    expect(() => {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    }).toThrow(HttpError);
+
+    try {
+      isProductOwner(mockRequestUserId, mockProductUserId);
+    } catch (error) {
+      expect((error as HttpError).message).toBe("Invalid Id");
+      expect((error as HttpError).statusCode).toBe(400);
+    }
   });
 });

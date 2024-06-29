@@ -3,23 +3,37 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
-import mongoose, { Document } from "mongoose";
 import server from "../../src/index";
-import { authConfig, userRepository, mongo } from "../../src/configs";
-import { IUser, IUserRepository, UserRoles } from "../../src/interfaces";
+import {
+  authConfig,
+  mongoDb,
+  databaseType,
+  sequelizeOrm,
+} from "../../src/configs";
+import { DatabaseType, IUser, UserRoles } from "../../src/interfaces";
 
-jest.mock("../../src/repositories");
-
-const repository: IUserRepository = userRepository;
-
-const createMockUser = (userData: Partial<IUser>): IUser & Document => {
+jest.mock("../../src/configs", () => {
+  const actualConfigs = jest.requireActual("../../src/configs");
   return {
-    ...userData,
-    _id: new mongoose.Types.ObjectId(),
-    isNew: false,
+    ...actualConfigs,
+    userRepository: {
+      getById: jest.fn(),
+      get: jest.fn(),
+      delete: jest.fn(),
+    },
+  };
+});
+
+const createMockUser = (userData: Partial<IUser>): IUser => {
+  return {
+    id: userData.id || "default_id",
+    roles: userData.roles || ["user"],
+    name: userData.name || "default_name",
+    email: userData.email || "default_email",
+    password: userData.password || "default_password",
     save: jest.fn(),
     remove: jest.fn(),
-  } as IUser & Document;
+  } as unknown as IUser;
 };
 
 const agent = new https.Agent({
@@ -30,15 +44,20 @@ const agent = new https.Agent({
 
 describe("User routes", () => {
   const testUser = createMockUser({
-    id: "6655aeb1b8fe6ab6df49691a",
+    id:
+      databaseType === DatabaseType.MongoDB
+        ? "6655aeb1b8fe6ab6df49691a"
+        : "2a4b845e-5430-4c7c-9df4-b2aa0d717550",
     roles: [UserRoles.User],
     name: "Test User",
     email: "testuser@example.com",
     password: "hashedpassword",
   });
-
   const testAdmin = createMockUser({
-    id: "6655b251408318022ab47a9d",
+    id:
+      databaseType === DatabaseType.MongoDB
+        ? "6655b251408318022ab47a9d"
+        : "7cbb6a87-c9de-4129-b94e-287b784c0b9a",
     roles: [UserRoles.Admin],
     name: "Test Admin",
     email: "testadmin@example.com",
@@ -53,9 +72,7 @@ describe("User routes", () => {
   const expiredUserToken = jwt.sign(
     { userId: testUser.id },
     authConfig.jwtSecret,
-    {
-      expiresIn: "1ms",
-    }
+    { expiresIn: "1ms" }
   );
   const nonExistentUserToken = jwt.sign(
     { userId: "non_existent_user_id" },
@@ -65,10 +82,19 @@ describe("User routes", () => {
   const invalidUserToken = "invalid_token";
 
   beforeAll(async () => {
-    await mongo.connectDb();
+    if (databaseType === DatabaseType.MongoDB) {
+      await mongoDb.connect();
+    } else {
+      await sequelizeOrm.connectDb();
+    }
   });
+
   afterAll(async () => {
-    await mongo.disconnectDb();
+    if (databaseType === DatabaseType.MongoDB) {
+      await mongoDb.disconnect();
+    } else {
+      await sequelizeOrm.disconnectDb();
+    }
     await new Promise<void>((resolve) => {
       server.close(() => {
         console.log("Server closed");
@@ -76,16 +102,34 @@ describe("User routes", () => {
       });
     });
   });
+
   beforeEach(() => {
-    repository.getById = jest.fn((id) => {
-      if (id === testUser.id) {
-        return Promise.resolve(testUser);
-      } else if (id === testAdmin.id) {
-        return Promise.resolve(testAdmin);
-      } else {
-        return Promise.resolve(null);
+    jest.clearAllMocks();
+
+    require("../../src/configs").userRepository.getById.mockImplementation(
+      (id: string) => {
+        if (id === testUser.id) {
+          return Promise.resolve(testUser);
+        } else if (id === testAdmin.id) {
+          return Promise.resolve(testAdmin);
+        } else {
+          return Promise.resolve(null);
+        }
       }
-    });
+    );
+
+    require("../../src/configs").userRepository.get.mockImplementation(() =>
+      Promise.resolve([testUser, testAdmin])
+    );
+
+    require("../../src/configs").userRepository.delete.mockImplementation(
+      async (id: string) => {
+        if (id === testUser.id || id === testAdmin.id) {
+          return "User deleted successfully";
+        }
+        throw new Error();
+      }
+    );
   });
 
   it("should get all users with valid token and admin user", async () => {
@@ -146,21 +190,19 @@ describe("User routes", () => {
   });
 
   it("should delete a user by id", async () => {
-    const userId = "6655b98a747268fd8b69cabc";
     const response = await request(server)
-      .delete(`/api/users/${userId}`)
+      .delete(`/api/users/${testUser.id}`)
       .agent(agent)
       .set("Authorization", `Bearer ${adminUserToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toBeDefined();
-    expect(response.body.message).toBe("User deleted succesfully");
+    expect(response.body.message).toBe("User deleted successfully");
   });
 
   it("should return 403 when a non-admin tries to delete a user by id", async () => {
-    const userId = "6655b9d817c7af0c7a2cfc9b";
     const response = await request(server)
-      .delete(`/api/users/${userId}`)
+      .delete(`/api/users/${testAdmin.id}`)
       .agent(agent)
       .set("Authorization", `Bearer ${userToken}`);
 
@@ -168,14 +210,14 @@ describe("User routes", () => {
     expect(response.body.message).toBe("Unauthorized role");
   });
 
-  it("should return 422 when an admin user tries to delete a user by an invalid mongo id", async () => {
-    const invalidMongoId = "invalid_mongo_id";
+  it("should return 422 when an admin user tries to delete a user by an invalid id", async () => {
+    const invalidId = "invalid_id";
     const response = await request(server)
-      .delete(`/api/users/${invalidMongoId}`)
+      .delete(`/api/users/${invalidId}`)
       .agent(agent)
       .set("Authorization", `Bearer ${adminUserToken}`);
 
     expect(response.status).toBe(422);
-    expect(response.body.message).toBe("id: Invalid value");
+    expect(response.body.message).toBe("id: Invalid ID format");
   });
 });

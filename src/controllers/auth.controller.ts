@@ -4,7 +4,7 @@ import { logger } from "../utils";
 import { HttpError, isHttpError } from "../middlewares";
 
 export class AuthController {
-  constructor(private service: AuthService) {}
+  constructor(private readonly service: AuthService) {}
 
   signUp = async (
     req: Request,

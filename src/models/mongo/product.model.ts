@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IProduct } from "../interfaces";
+import { IProduct } from "../../interfaces";
 
 const productSchema = new Schema<IProduct>(
   {
@@ -7,7 +7,7 @@ const productSchema = new Schema<IProduct>(
     description: { type: String, required: true },
     category: { type: String, required: true },
     price: { type: Number, required: true },
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );

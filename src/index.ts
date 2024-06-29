@@ -7,9 +7,15 @@ import helmet from "helmet";
 import router from "./routes";
 import { errorHandler, morganMiddleware, forceHttps } from "./middlewares";
 import { logger } from "./utils";
-import { appConfig, mongo } from "./configs";
+import { appConfig, mongoDb, sequelizeOrm, databaseType } from "./configs";
+import { DatabaseType } from "./interfaces";
 
-mongo.connectDb();
+if (databaseType === DatabaseType.MongoDB) {
+  mongoDb.connect();
+} else {
+  sequelizeOrm.connectDb();
+}
+
 const app: Application = express();
 
 app.use(forceHttps);
