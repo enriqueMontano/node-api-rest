@@ -106,6 +106,7 @@ To launch the server in development mode, run the following command in the proje
 
 ```bash
 npm run dev
+```
 
 ## How to use
 
@@ -222,7 +223,7 @@ To run the tests, in the root directory, run the following command:
 
 ```bash
 npm run test
-
+```
 
 ## Project structure
 
